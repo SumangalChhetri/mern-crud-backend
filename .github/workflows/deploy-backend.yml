@@ -3,7 +3,7 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - master  # ✅ Use 'main' if your repo's default branch is 'main'
+      - master  # Change to "main" if your default branch is "main"
 
 jobs:
   deploy:
@@ -14,20 +14,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Copy files to EC2
+      - name: Copy files to EC2 via SCP
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "."
           target: "/home/ubuntu/mern-crud-backend"
 
-      - name: Install dependencies & Restart backend
+      - name: SSH into EC2 and restart backend
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/mern-crud-backend

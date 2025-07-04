@@ -1,22 +1,35 @@
-{
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "npx nodemon server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.0.1",
-    "express": "^5.1.0",
-    "mongoose": "^8.16.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
-  }
-}
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - master  # Change to "main" if your default branch is "main"
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy files to EC2 via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "."
+          target: "/home/ubuntu/mern-crud-backend"
+
+      - name: SSH into EC2 and restart backend
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/mern-crud-backend
+            npm install
+            pm2 restart mern-backend || pm2 start server.js --name mern-backend

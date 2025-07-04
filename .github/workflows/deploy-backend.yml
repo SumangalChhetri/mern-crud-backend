@@ -3,27 +3,18 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - main  # ✅ Make sure your default branch is 'main'
+      - main
+      - master
 
 jobs:
   deploy:
-    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Copy backend files to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "."  # ✅ This will send the entire repo
-          target: "/home/ubuntu/mern-crud-backend"
-
-      - name: SSH into EC2 and restart backend
+      - name: SSH and deploy backend
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -31,7 +22,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/mern-crud-backend
-            git pull origin main  # ✅ In case code was updated
+            git pull origin main || git pull origin master
             npm install
-            pm2 list || pm2 start server.js --name mern-backend
-            pm2 restart mern-backend
+            pm2 restart backend || pm2 start server.js --name backend

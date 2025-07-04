@@ -3,7 +3,7 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - master  # or 'main' if you're using that
+      - main  # or 'main' if you're using that
 
 jobs:
   deploy:
